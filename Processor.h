@@ -5,24 +5,22 @@
 #ifndef CSD_ASSIGNMENT2_PROCESSOR_H
 #define CSD_ASSIGNMENT2_PROCESSOR_H
 
-
 #include "Memory.h"
 #include "RegisterFile.h"
 #include "InstructionSet.h"
 
 class Processor {
-private:
+ private:
 
+  Memory<char> *pMem;
+  RegisterFile<unsigned short> *pRegFile;
 
-    Memory<char>* pMem;
-    RegisterFile<unsigned short>* pRegFile;
+ public:
 
-public:
+  Processor(Memory<char> *mem, RegisterFile<unsigned short> *rf, InstructionSet::Decoder *decoder);
+  void run();
 
-    Processor(Memory<char> *mem, RegisterFile<unsigned short> *rf, InstructionSet::Decoder *decoder);
-    void run();
-
-    InstructionSet::Decoder *decoder;
+  InstructionSet::Decoder *decoder;
 };
 
 #endif //CSD_ASSIGNMENT2_PROCESSOR_H

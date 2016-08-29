@@ -3,73 +3,72 @@
 //
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 #ifndef CSD_ASSIGNMENT2_MEMORY_H
 #define CSD_ASSIGNMENT2_MEMORY_H
 
-
 template<typename T>
 class Memory {
-public:
-    Memory( int );
+ public:
+  Memory(int);
 
-    int getSize() const;
+  int getSize() const;
 
-    void setSize(int size);
+  void setSize(int size);
 
-    T& block( int i );
+  T &block(int i);
 
-    T getBlock( int i );
+  T getBlock(int i);
 
-    void setBlock( int i, T s );
+  void setBlock(int i, T s);
 
-    void writeMem( int i, void* , int n );
+  void writeMem(int i, void *, int n);
 
-    void readMem( int i, void* buffer, int n );
-private:
-    T* buffer;
-    int size;
+  void readMem(int i, void *buffer, int n);
+ private:
+  T *buffer;
+  int size;
 
 };
 
 template<typename T>
 int Memory<T>::getSize() const {
-    return size;
+  return size;
 }
 
 template<typename T>
 void Memory<T>::setSize(int size) {
-    Memory::size = size;
+  Memory::size = size;
 }
 
 template<typename T>
-Memory<T>::Memory( int size ) {
-    this->size = size;
-    this->buffer = (T *) new short[size];
+Memory<T>::Memory(int size) {
+  this->size = size;
+  this->buffer = (T *) new short[size];
 }
 
 template<typename T>
-T& Memory<T>::block(int i) {
-    return *(this->buffer + i);
+T &Memory<T>::block(int i) {
+  return *(this->buffer + i);
 }
 
 template<typename T>
 T Memory<T>::getBlock(int i) {
-    return this->buffer[i];
+  return this->buffer[i];
 }
 
 template<typename T>
-void Memory<T>::setBlock( int i, T s ){
-    this->buffer[i] = s;
+void Memory<T>::setBlock(int i, T s) {
+  this->buffer[i] = s;
 }
 template<typename T>
-void Memory<T>::writeMem( int i, void* arr, int n ){
-    memcpy( buffer, arr, n * sizeof(T) );
+void Memory<T>::writeMem(int i, void *arr, int n) {
+  memcpy(buffer, arr, n * sizeof(T));
 }
 template<typename T>
-void Memory<T>::readMem( int i, void* buffer, int n ){
-    memcpy( buffer, this->buffer, n * sizeof(T) );
+void Memory<T>::readMem(int i, void *buffer, int n) {
+  memcpy(buffer, this->buffer, n * sizeof(T));
 }
-
 
 #endif //CSD_ASSIGNMENT2_MEMORY_H
