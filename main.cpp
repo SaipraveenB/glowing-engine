@@ -1,8 +1,13 @@
 #include <iostream>
+#include <sstream>
 #include "Processor.h"
 #include "Instruction.h"
 #include "ArithmeticInstruction.h"
 
+
+void processCommand(string buf, Memory<char>*, RegisterFile<unsigned short>* );
+
+void extractLR(string basic_string, unsigned short *pInt, unsigned short *pInt1);
 
 int main() {
 
@@ -18,6 +23,8 @@ int main() {
 
     InstructionSet::Encoder *encoder = isa->getEncoder();
 
+
+
     // Load instructions into the memory at location 0.
     char buf[1000];
     int memPos = 0;
@@ -25,7 +32,11 @@ int main() {
 
         if( string(buf).compare(";") == 0 )
             break;
-
+        if( buf[0] == '$' ){
+            // Initialisation command.
+            processCommand( string(buf), pMem, pRegFile);
+            continue;
+        }
 
         vector<unsigned short> bin_instr = encoder->encode(buf);
         pMem->writeMem(memPos, bin_instr.data(), 2 );
@@ -38,4 +49,37 @@ int main() {
     p->run();
 
     return 0;
+}
+
+void processCommand(string buf, Memory<char>* pMem, RegisterFile<unsigned short>* pRegFile ) {
+    string command = buf.substr(1);
+    if( command[0] == 'R'){
+        // Register fill command.
+        string rcommand = command.substr(1);
+        unsigned short l, r;
+        extractLR( rcommand, &l, &r );
+
+        pRegFile->reg(l) = r;
+    }else{
+        // Memory fill command.
+        unsigned short l,r;
+        extractLR( command, &l, &r );
+
+        // Write 2 bytes into the memory.
+        pMem->writeMem(l,&r,2);
+    }
+}
+
+void extractLR(string basic_string, unsigned short *p0, unsigned short *p1) {
+
+    stringstream ss(basic_string);
+    char sl[20];
+    char sr[20];
+
+    ss.getline(sl, 20, '$');
+    ss >> sr;
+
+    *p0 = (unsigned short) stoi(sl);
+    *p1 = (unsigned short) stoi(sr);
+
 }

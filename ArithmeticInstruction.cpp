@@ -42,32 +42,32 @@ void ArithmeticInstruction::ArithmeticFactory::registerName(map<string, Instruct
 
 
         // Register names.
-        directory->insert(make_pair("ADD", this));
-        directory->insert(make_pair("SUB", this));
-        directory->insert(make_pair("MUL", this));
+    directory->insert(make_pair("ADD", this));
+    directory->insert(make_pair("SUB", this));
+    directory->insert(make_pair("MUL", this));
 
         // Retreive instruction numbers.
 
-        INSTR_ADD = (unsigned short) vec->size();
-        vec->push_back(this);
-        INSTR_ADD_IMM0 = (unsigned short) vec->size();
-        vec->push_back(this);
-        INSTR_ADD_IMM1 = (unsigned short) vec->size();
+    INSTR_ADD = (unsigned short) vec->size();
+    vec->push_back(this);
+    INSTR_ADD_IMM0 = (unsigned short) vec->size();
+    vec->push_back(this);
+    INSTR_ADD_IMM1 = (unsigned short) vec->size();
     vec->push_back(this);
 
 
-        INSTR_MUL = (unsigned short) vec->size();
-        vec->push_back(this);
-        INSTR_MUL_IMM0 = (unsigned short) vec->size();
-        vec->push_back(this);
-        INSTR_MUL_IMM1 = (unsigned short) vec->size();
+    INSTR_MUL = (unsigned short) vec->size();
+    vec->push_back(this);
+    INSTR_MUL_IMM0 = (unsigned short) vec->size();
+    vec->push_back(this);
+    INSTR_MUL_IMM1 = (unsigned short) vec->size();
     vec->push_back(this);
 
-        INSTR_SUB = (unsigned short) vec->size();
-        vec->push_back(this);
-        INSTR_SUB_IMM0 = (unsigned short) vec->size();
-        vec->push_back(this);
-        INSTR_SUB_IMM1 = (unsigned short) vec->size();
+    INSTR_SUB = (unsigned short) vec->size();
+    vec->push_back(this);
+    INSTR_SUB_IMM0 = (unsigned short) vec->size();
+    vec->push_back(this);
+    INSTR_SUB_IMM1 = (unsigned short) vec->size();
     vec->push_back(this);
 
 
