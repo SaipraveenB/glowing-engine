@@ -25,8 +25,8 @@ class Memory {
   void readMem(const int idx, void *buffer, const int num_bytes) const;
 
  private:
-  std::unique_ptr<T> buffer_;
   int size_;
+  T *buffer_;
 };
 
 template<typename T>
@@ -42,7 +42,7 @@ void Memory<T>::setSize(const int size) {
 template<typename T>
 Memory<T>::Memory(const int size) {
   this->size_ = size;
-  this->buffer_.reset(new T[size]);
+  this->buffer_ = new T[size];
 }
 
 template<typename T>
@@ -62,12 +62,12 @@ void Memory<T>::setBlock(const int idx, const T &new_value) {
 
 template<typename T>
 void Memory<T>::writeMem(const int idx, const void *arr, const int num_bytes) {
-  memcpy(buffer_, arr, num_bytes * sizeof(T));
+  memcpy(buffer_ + idx, arr, num_bytes * sizeof(T));
 }
 
 template<typename T>
 void Memory<T>::readMem(const int idx, void *buffer, const int num_bytes) const {
-  memcpy(buffer, this->buffer_, num_bytes * sizeof(T));
+  memcpy(buffer, this->buffer_ + idx, num_bytes * sizeof(T));
 }
 
 #endif //CSD_ASSIGNMENT2_MEMORY_H

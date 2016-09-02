@@ -46,7 +46,7 @@ class Instruction {
   };
 
   // Default.
-  bool isHalt() {
+  virtual bool isHalt() {
     // Not implemented yet.
     return false;
   }

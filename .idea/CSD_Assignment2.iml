@@ -2,20 +2,22 @@
 <module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/MemoryInstructions.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Processor.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/RegisterFile.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/RegisterFile.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ArithmeticInstruction.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Instruction.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ArithmeticInstruction.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Memory.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/InstructionSet.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/MemoryInstructions.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/ArithmeticInstruction.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Memory.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ControlInstructions.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/InstructionSet.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/MemoryInstructions.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/RegisterFile.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ControlInstructions.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Processor.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Instruction.h" isTestSource="false" />
     </content>
