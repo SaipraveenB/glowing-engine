@@ -15,7 +15,7 @@ void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf, Memory<cha
     val1 = rf->reg(in1);
   } else if (mode == 1) {
 
-    val0 = in0; // TODO: Convert from 2s complement 4-bit to 2s complement 16-bit.
+    val0 = in0; // TODO(SaipraveenB): Convert from 2s complement 4-bit to 2s complement 16-bit.
     val1 = rf->reg(in1);
 
   } else if (mode == 2) {
@@ -44,7 +44,6 @@ void ArithmeticInstruction::ArithmeticFactory::registerName(map<string, Instruct
   directory->insert(make_pair("MUL", this));
 
   // Retreive instruction numbers.
-
   INSTR_ADD = (unsigned short) vec->size();
   vec->push_back(this);
   INSTR_ADD_IMM0 = (unsigned short) vec->size();
@@ -89,10 +88,10 @@ ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens) {
 
   if (in0[0] == '#') {
     instr_offset = 1;
-    // TODO: 2s complement si0 here.
+    // TODO(SaipraveenB): 2s complement si0 here.
   } else if (in1[0] == '#') {
     instr_offset = 2;
-    // TODO: 2s complement si1 here.
+    // TODO(SaipraveenB): 2s complement si1 here.
   }
 
   so = (unsigned short) std::stoi(out.substr(1));

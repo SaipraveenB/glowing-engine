@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <memory>
 
 #ifndef CSD_ASSIGNMENT2_MEMORY_H
 #define CSD_ASSIGNMENT2_MEMORY_H
@@ -11,64 +12,62 @@
 template<typename T>
 class Memory {
  public:
-  Memory(int);
+  Memory(const int size);
 
   int getSize() const;
+  void setSize(const int size);
 
-  void setSize(int size);
+  T &block(const int idx);
+  T getBlock(const int idx) const;
+  void setBlock(const int idx, const T &new_value);
 
-  T &block(int i);
+  void writeMem(const int idx, const void *loc, const int num_bytes);
+  void readMem(const int idx, void *buffer, const int num_bytes) const;
 
-  T getBlock(int i);
-
-  void setBlock(int i, T s);
-
-  void writeMem(int i, void *, int n);
-
-  void readMem(int i, void *buffer, int n);
  private:
-  T *buffer;
-  int size;
-
+  std::unique_ptr<T> buffer_;
+  int size_;
 };
 
 template<typename T>
 int Memory<T>::getSize() const {
-  return size;
+  return size_;
 }
 
 template<typename T>
-void Memory<T>::setSize(int size) {
-  Memory::size = size;
+void Memory<T>::setSize(const int size) {
+  size_ = size;
 }
 
 template<typename T>
-Memory<T>::Memory(int size) {
-  this->size = size;
-  this->buffer = (T *) new short[size];
+Memory<T>::Memory(const int size) {
+  this->size_ = size;
+  this->buffer_.reset(new T[size]);
 }
 
 template<typename T>
-T &Memory<T>::block(int i) {
-  return *(this->buffer + i);
+T &Memory<T>::block(const int idx) {
+  return this->buffer_[idx];
 }
 
 template<typename T>
-T Memory<T>::getBlock(int i) {
-  return this->buffer[i];
+T Memory<T>::getBlock(const int idx) const {
+  return this->buffer_[idx];
 }
 
 template<typename T>
-void Memory<T>::setBlock(int i, T s) {
-  this->buffer[i] = s;
+void Memory<T>::setBlock(const int idx, const T &new_value) {
+  this->buffer_[idx] = new_value;
 }
+
 template<typename T>
-void Memory<T>::writeMem(int i, void *arr, int n) {
-  memcpy(buffer, arr, n * sizeof(T));
+void Memory<T>::writeMem(const int idx, const void *arr, const int num_bytes) {
+  memcpy(buffer_, arr, num_bytes * sizeof(T));
 }
+
 template<typename T>
-void Memory<T>::readMem(int i, void *buffer, int n) {
-  memcpy(buffer, this->buffer, n * sizeof(T));
+void Memory<T>::readMem(const int idx, void *buffer, const int num_bytes) const {
+  memcpy(buffer, this->buffer_, num_bytes * sizeof(T));
 }
 
 #endif //CSD_ASSIGNMENT2_MEMORY_H
