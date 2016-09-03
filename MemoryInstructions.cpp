@@ -24,13 +24,13 @@ std::vector<std::string> split(const std::string &s, const char delim) {
 
 // Execute this instruction
 void LoadInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  unsigned short phy_addr = rf->registers[this->base_register] + register_offset;
+  unsigned short phy_addr = rf->get(this->base_register) + register_offset;
 
   unsigned short transfer_half_word;
 
   mem->readMem(phy_addr, &transfer_half_word, sizeof(unsigned short));
 
-  rf->registers[this->output_register] = transfer_half_word;
+  rf->reg(this->output_register) = transfer_half_word;
 
   return;
 }
@@ -73,7 +73,8 @@ Instruction *LoadInstruction::LoadFactory::make(vector<unsigned short> raw_instr
 }
 
 // Encodes the string into a raw instruction
-vector<unsigned short> LoadInstruction::LoadFactory::encode(vector<string> tokens) {
+vector<unsigned short> LoadInstruction::LoadFactory::encode(vector<string> tokens,
+                                                            std::map<std::string, unsigned int> symbols) {
   // The first token is "LD"
   if (tokens[0] != "LD")
     throw std::runtime_error("tokens[0] != LD");
@@ -94,9 +95,9 @@ vector<unsigned short> LoadInstruction::LoadFactory::encode(vector<string> token
 }
 
 void StoreInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  unsigned short phy_addr = this->register_offset + rf->registers[this->base_register];
+  unsigned short phy_addr = this->register_offset + rf->get(this->base_register);
 
-  unsigned short data = rf->registers[this->input_register];
+  unsigned short data = rf->get(this->input_register);
 
   mem->writeMem(phy_addr, &data, sizeof(unsigned short));
 
@@ -134,7 +135,8 @@ Instruction *StoreInstruction::StoreFactory::make(vector<unsigned short> raw_ins
 }
 
 // Encodes the string into a raw instruction
-vector<unsigned short> StoreInstruction::StoreFactory::encode(vector<string> tokens) {
+vector<unsigned short> StoreInstruction::StoreFactory::encode(vector<string> tokens,
+                                                              std::map<std::string, unsigned int> symbols) {
   // The first token is "SD"
   if (tokens[0] != "SD")
     throw std::runtime_error("tokens[0] != SD");

@@ -42,7 +42,7 @@ InstructionSet::Encoder::Encoder(InstructionSet *is) {
 
 }
 
-vector<unsigned short> InstructionSet::Encoder::encode(string instr_line) {
+vector<unsigned short> InstructionSet::Encoder::encode(string instr_line, std::map<std::string, unsigned int> symbols) {
 
   // Handle RISC instruction set encoding.
 
@@ -76,7 +76,7 @@ vector<unsigned short> InstructionSet::Encoder::encode(string instr_line) {
   }
 
   Instruction::Factory *factory = set->nameset[tokens[0]];
-  vector<unsigned short> compressed = factory->encode(tokens);
+  vector<unsigned short> compressed = factory->encode(tokens, symbols);
 
   return compressed;
 }

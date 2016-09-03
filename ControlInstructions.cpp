@@ -8,7 +8,7 @@ namespace {
 void split(const std::string &s, const char delim, std::vector<std::string> &elems) {
   std::stringstream ss(s);
   char item[100];
-  while (ss.getline( item, 100, delim)) {
+  while (ss.getline(item, 100, delim)) {
     elems.push_back(string(item));
     std::cerr << "item :: " << item << "\n";
   }
@@ -40,7 +40,8 @@ Instruction *HaltInstruction::HaltFactory::make(vector<unsigned short> raw_instr
   return instr;
 }
 
-vector<unsigned short> HaltInstruction::HaltFactory::encode(vector<string> tokens) {
+vector<unsigned short> HaltInstruction::HaltFactory::encode(vector<string> tokens,
+                                                            std::map<std::string, unsigned int> symbols) {
   if (tokens[0] != "HLT")
     throw std::runtime_error("tokens[0] != HLT");
 
@@ -70,7 +71,9 @@ void ConditionalBranchInstruction::ConditionalBranchFactory::registerName(map<st
   return;
 }
 
-vector<unsigned short> ConditionalBranchInstruction::ConditionalBranchFactory::encode(vector<string> tokens) {
+vector<unsigned short> ConditionalBranchInstruction::ConditionalBranchFactory::encode(vector<string> tokens,
+                                                                                      std::map<std::string,
+                                                                                               unsigned int> symbols) {
   if (tokens[0] != "BEQZ")
     throw std::runtime_error("tokens[0] != BEQZ");
 
@@ -78,7 +81,7 @@ vector<unsigned short> ConditionalBranchInstruction::ConditionalBranchFactory::e
 
   // TODO(bitesandbytes) : DEBUG : check for size of strs.
   unsigned short reg_num = static_cast<unsigned short>(std::stoi(strs[0]));
-  unsigned short pc_offset = static_cast<unsigned short>(std::stoi(tokens[2]));
+  short pc_offset = static_cast<short>(symbols[strs[1]] - symbols["_PC_"]);
 
   unsigned short instr = (this->INSTR_C_BRANCH & 0x0F) << 12;
   instr |= (reg_num & 0x0F) << 8;
@@ -97,7 +100,7 @@ Instruction *ConditionalBranchInstruction::ConditionalBranchFactory::make(vector
     throw std::runtime_error("inum != this->INSTR_C_BRANCH");
 
   unsigned short check_reg = (raw_instr[0] >> 8) & 0x0F;
-  unsigned short pc_offset = (raw_instr[0] & 0xFF);
+  short pc_offset = static_cast<short>(raw_instr[0] & 0xFF);
 
   instr->check_reg = check_reg;
   instr->pc_offset = pc_offset;
@@ -121,11 +124,13 @@ void UnconditionalBranchInstruction::UnconditionalBranchFactory::registerName(ma
   return;
 }
 
-vector<unsigned short> UnconditionalBranchInstruction::UnconditionalBranchFactory::encode(vector<string> tokens) {
+vector<unsigned short> UnconditionalBranchInstruction::UnconditionalBranchFactory::encode(vector<string> tokens,
+                                                                                          std::map<std::string,
+                                                                                                   unsigned int> symbols) {
   if (tokens[0] != "JMP")
     throw std::runtime_error("tokens[0] != JMP");
 
-  unsigned short pc_offset = static_cast<unsigned short>(std::stoi(tokens[1]));
+  short pc_offset = static_cast<short>(symbols[tokens[1]] - symbols["_PC_"]);
 
   unsigned short instr = (this->INSTR_UC_BRANCH & 0x0F) << 12;
   // 8-bit PC offset.
@@ -141,7 +146,7 @@ Instruction *UnconditionalBranchInstruction::UnconditionalBranchFactory::make(ve
   if (inum != this->INSTR_UC_BRANCH)
     throw std::runtime_error("inum != this->INSTR_UC_BRANCH");
 
-  unsigned short pc_offset = (raw_instr[0] & 0xFF);
+  short pc_offset = static_cast<short>(raw_instr[0] & 0xFF);
 
   instr->pc_offset = pc_offset;
 

@@ -68,7 +68,7 @@ void ArithmeticInstruction::ArithmeticFactory::registerName(map<string, Instruct
 }
 
 vector<unsigned short>
-ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens) {
+ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens, std::map<std::string, unsigned int> symbols) {
 
   // Check for immediate operands.
 

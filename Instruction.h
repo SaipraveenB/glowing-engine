@@ -29,7 +29,7 @@ class Instruction {
       return nullptr;
     }
 
-    virtual vector<unsigned short> encode(vector<string> tokens ) {
+    virtual vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols) {
       vector<unsigned short> s;
       s.push_back(0);
       return s;

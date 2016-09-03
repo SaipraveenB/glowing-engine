@@ -3,6 +3,7 @@
 #include "Processor.h"
 #include "ArithmeticInstruction.h"
 #include "ControlInstructions.h"
+#include "MemoryInstructions.h"
 
 void processCommand(string buf, Memory<char> *, RegisterFile<unsigned short> *);
 
@@ -17,12 +18,15 @@ int main() {
 
   InstructionSet *isa = new InstructionSet();
   isa->addFactory(new ArithmeticInstruction::ArithmeticFactory());
+  isa->addFactory(new LoadInstruction::LoadFactory());
+  isa->addFactory(new StoreInstruction::StoreFactory());
+  isa->addFactory(new ConditionalBranchInstruction::ConditionalBranchFactory());
+  isa->addFactory(new UnconditionalBranchInstruction::UnconditionalBranchFactory());
+  isa->addFactory(new HaltInstruction::HaltFactory());
 
   Processor *p = new Processor(pMem, pRegFile, isa->getDecoder());
 
   InstructionSet::Encoder *encoder = isa->getEncoder();
-
-
 
   // Load instructions into the memory at location 0.
   char buf[1000];
@@ -67,13 +71,8 @@ int main() {
   // Reset to start.
   memPos = 0;
   while (program.getline(buf, 1000)) {
-
-
-
-
     encoder->symbols["_PC_"] = memPos;
-
-    vector<unsigned short> bin_instr = encoder->encode(buf);
+    vector<unsigned short> bin_instr = encoder->encode(buf, map<string, unsigned int>());
     pMem->writeMem(memPos, bin_instr.data(), 2);
     // Ww're only putting in instructions that take up exactly 16 bits.
     memPos += 2;
