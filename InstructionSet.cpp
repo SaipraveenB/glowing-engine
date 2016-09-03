@@ -17,6 +17,7 @@ InstructionSet::Decoder *InstructionSet::getDecoder() {
 }
 
 InstructionSet::InstructionSet() {
+  constructors = std::vector<Instruction::Factory *>(16, nullptr);
   //for( int i = 0; i < factories.size(); i++ ){
   //    factories[i]->registerName( &nameset, &constructors );
   //}
@@ -33,7 +34,6 @@ InstructionSet::Decoder::Decoder(InstructionSet *is) {
 Instruction *InstructionSet::Decoder::decode(vector<unsigned short> instr_raw) {
   unsigned short inum = (instr_raw[0] >> 12);
   return this->set->constructors.at(inum)->make(instr_raw);
-
 }
 
 InstructionSet::Encoder::Encoder(InstructionSet *is) {
@@ -42,25 +42,23 @@ InstructionSet::Encoder::Encoder(InstructionSet *is) {
 
 }
 
-vector<unsigned short> InstructionSet::Encoder::encode(string instr_line) {
+vector<unsigned short> InstructionSet::Encoder::encode(string instr_line, std::map<std::string, unsigned int> symbols) {
 
   // Handle RISC instruction set encoding.
-
-
   // Remove the leading space.
   for (int i = 0; i < instr_line.size(); i++) {
 
     if (instr_line[i] == ' ') {
-      instr_line[i] = ',';
+      instr_line[i] = ' ';
       break;
     }
 
   }
 
   // Remove whitespace from the string.
-  std::remove_if(instr_line.begin(), instr_line.end(), [](char c) {
-    return std::isspace(static_cast<unsigned char>(c));
-  });
+  //std::remove_if(instr_line.begin(), instr_line.end(), [](char c) {
+  //  return std::isspace(static_cast<unsigned char>(c));
+  //});
 
   stringstream ss(instr_line);
 
@@ -71,12 +69,12 @@ vector<unsigned short> InstructionSet::Encoder::encode(string instr_line) {
     if (ss.eof())
       break;
 
-    ss.getline(token, 100, ',');
+    ss.getline(token, 100, ' ');
     tokens.push_back(string(token));
   }
 
   Instruction::Factory *factory = set->nameset[tokens[0]];
-  vector<unsigned short> compressed = factory->encode(tokens);
+  vector<unsigned short> compressed = factory->encode(tokens, symbols);
 
   return compressed;
 }

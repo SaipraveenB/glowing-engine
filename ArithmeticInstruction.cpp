@@ -14,10 +14,8 @@ void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf, Memory<cha
     val0 = rf->reg(in0);
     val1 = rf->reg(in1);
   } else if (mode == 1) {
-
     val0 = in0; // TODO(SaipraveenB): Convert from 2s complement 4-bit to 2s complement 16-bit.
     val1 = rf->reg(in1);
-
   } else if (mode == 2) {
     val1 = in1;
     val0 = rf->reg(in0);
@@ -32,6 +30,8 @@ void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf, Memory<cha
       break;
   }
 
+  rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
+
 }
 
 void ArithmeticInstruction::ArithmeticFactory::registerName(map<string, Instruction::Factory *> *directory,
@@ -43,39 +43,37 @@ void ArithmeticInstruction::ArithmeticFactory::registerName(map<string, Instruct
   directory->insert(make_pair("SUB", this));
   directory->insert(make_pair("MUL", this));
 
-  // Retreive instruction numbers.
-  INSTR_ADD = (unsigned short) vec->size();
-  vec->push_back(this);
-  INSTR_ADD_IMM0 = (unsigned short) vec->size();
-  vec->push_back(this);
-  INSTR_ADD_IMM1 = (unsigned short) vec->size();
-  vec->push_back(this);
+  // Retrieve instruction numbers.
+  INSTR_ADD = 0;
+  (*vec)[INSTR_ADD] = this;
+  INSTR_ADD_IMM0 = 1;
+  (*vec)[INSTR_ADD_IMM0] = this;
+  INSTR_ADD_IMM1 = 3;
+  (*vec)[INSTR_ADD_IMM1] = this;
 
-  INSTR_MUL = (unsigned short) vec->size();
-  vec->push_back(this);
-  INSTR_MUL_IMM0 = (unsigned short) vec->size();
-  vec->push_back(this);
-  INSTR_MUL_IMM1 = (unsigned short) vec->size();
-  vec->push_back(this);
+  INSTR_MUL = 2;
+  (*vec)[INSTR_MUL] = this;
+  INSTR_MUL_IMM0 = 5;
+  (*vec)[INSTR_MUL_IMM0] = this;
+  INSTR_MUL_IMM1 = 7;
+  (*vec)[INSTR_MUL_IMM1] = this;
 
-  INSTR_SUB = (unsigned short) vec->size();
-  vec->push_back(this);
-  INSTR_SUB_IMM0 = (unsigned short) vec->size();
-  vec->push_back(this);
-  INSTR_SUB_IMM1 = (unsigned short) vec->size();
-  vec->push_back(this);
-
+  INSTR_SUB = 4;
+  (*vec)[INSTR_SUB] = this;
+  INSTR_SUB_IMM0 = 9;
+  (*vec)[INSTR_SUB_IMM0] = this;
+  INSTR_SUB_IMM1 = 11;
+  (*vec)[INSTR_SUB_IMM1] = this;
 }
 
 vector<unsigned short>
-ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens) {
+ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens, std::map<std::string, unsigned int> symbols) {
 
   // Check for immediate operands.
-
   string instr_name = tokens[0];
-  string in0 = tokens[1];
-  string in1 = tokens[2];
-  string out = tokens[3];
+  string in0 = tokens[2];
+  string in1 = tokens[3];
+  string out = tokens[1];
 
   unsigned short instr_offset = 0;
 
@@ -122,17 +120,32 @@ Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned shor
 
   if (inum == INSTR_ADD || inum == INSTR_ADD_IMM1 || inum == INSTR_ADD_IMM0) {
     ai->op = 0;
-    ai->mode = inum - INSTR_ADD;
+    if (inum == INSTR_ADD)
+      ai->mode = 0;
+    else if (inum == INSTR_ADD_IMM0)
+      ai->mode = 1;
+    else
+      ai->mode = 2;
   }
 
   if (inum == INSTR_SUB || inum == INSTR_SUB_IMM1 || inum == INSTR_SUB_IMM0) {
     ai->op = 1;
-    ai->mode = inum - INSTR_SUB;
+    if (inum == INSTR_SUB)
+      ai->mode = 0;
+    else if (inum == INSTR_SUB_IMM0)
+      ai->mode = 1;
+    else
+      ai->mode = 2;
   }
 
   if (inum == INSTR_MUL || inum == INSTR_MUL_IMM1 || inum == INSTR_MUL_IMM0) {
     ai->op = 2;
-    ai->mode = inum - INSTR_MUL;
+    if (inum == INSTR_MUL)
+      ai->mode = 0;
+    else if (inum == INSTR_MUL_IMM0)
+      ai->mode = 1;
+    else
+      ai->mode = 2;
   }
 
   ai->out = (unsigned short) ((raw_instr[0] >> 8) & 0x0F);

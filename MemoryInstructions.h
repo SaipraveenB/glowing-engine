@@ -22,7 +22,7 @@ class LoadInstruction : public Instruction {
 
     Instruction *make(vector<unsigned short> raw_instr);
 
-    vector<unsigned short> encode(vector<string> tokens);
+    vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     unsigned short INSTR_LD_BASE_OFFSET;
   };
@@ -43,7 +43,7 @@ class StoreInstruction : public Instruction {
 
     Instruction *make(vector<unsigned short> raw_instr);
 
-    vector<unsigned short> encode(vector<string> tokens);
+    vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     unsigned short INSTR_SD_BASE_OFFSET;
   };

@@ -20,7 +20,7 @@ class HaltInstruction : public Instruction {
 
     Instruction *make(vector<unsigned short> raw_instr);
 
-    vector<unsigned short> encode(vector<string> tokens);
+    vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     unsigned short INSTR_HALT;
   };
@@ -30,7 +30,7 @@ class ConditionalBranchInstruction : public Instruction {
  public:
 
   unsigned short check_reg;
-  unsigned short pc_offset;
+  short pc_offset;
 
   void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
 
@@ -40,7 +40,7 @@ class ConditionalBranchInstruction : public Instruction {
 
     void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec);
 
-    vector<unsigned short> encode(vector<string> tokens);
+    vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     Instruction *make(vector<unsigned short> raw_instr);
 
@@ -50,7 +50,7 @@ class ConditionalBranchInstruction : public Instruction {
 
 class UnconditionalBranchInstruction : public Instruction {
  public:
-  unsigned short pc_offset;
+  short pc_offset;
 
   void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
 
@@ -60,7 +60,7 @@ class UnconditionalBranchInstruction : public Instruction {
 
     void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec);
 
-    vector<unsigned short> encode(vector<string> tokens);
+    vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     Instruction *make(vector<unsigned short> raw_instr);
 

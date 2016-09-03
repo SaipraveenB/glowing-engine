@@ -13,8 +13,9 @@ void Processor::run() {
 
     // 2-Byte instruction buffer.
     std::vector<unsigned short> next_instr(1);
+    next_instr[0] = this->pMem->readShort(pRegFile->spl(RegisterFile<unsigned short>::REG_PC));
 
-    this->pMem->readMem(pRegFile->spl(RegisterFile<unsigned short>::REG_PC), next_instr.data(), 2);
+    //this->pMem->readMem(pRegFile->spl(RegisterFile<unsigned short>::REG_PC), next_instr.data(), sizeof(unsigned short));
 
     Instruction *instr = decoder->decode(next_instr);
     if (instr->isHalt())

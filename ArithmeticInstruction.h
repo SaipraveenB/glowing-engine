@@ -25,7 +25,7 @@ class ArithmeticInstruction : public Instruction {
 
     void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec);
 
-    vector<unsigned short> encode(vector<string> tokens);
+    vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     Instruction *make(vector<unsigned short> raw_instr);
 
