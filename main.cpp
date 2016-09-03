@@ -69,8 +69,6 @@ int main() {
   while (program.getline(buf, 1000)) {
 
 
-
-
     encoder->symbols["_PC_"] = memPos;
 
     vector<unsigned short> bin_instr = encoder->encode(buf);
