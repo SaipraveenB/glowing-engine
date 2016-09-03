@@ -7,9 +7,9 @@
 namespace {
 void split(const std::string &s, const char delim, std::vector<std::string> &elems) {
   std::stringstream ss(s);
-  std::string item;
-  while (getline(ss, item, delim)) {
-    elems.push_back(item);
+  char item[100];
+  while (ss.getline( item, 100, delim)) {
+    elems.push_back(string(item));
     std::cerr << "item :: " << item << "\n";
   }
 }

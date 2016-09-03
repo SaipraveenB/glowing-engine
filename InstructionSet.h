@@ -34,9 +34,11 @@ class InstructionSet {
 
   class Encoder {
    public:
+    map<std::string, unsigned int> symbols;
+
+
     Encoder(InstructionSet *);
     vector<unsigned short> encode(string instr_line);
-
     InstructionSet *set;
 
   };

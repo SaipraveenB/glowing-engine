@@ -2,6 +2,7 @@
 #include <sstream>
 #include "Processor.h"
 #include "ArithmeticInstruction.h"
+#include "ControlInstructions.h"
 
 void processCommand(string buf, Memory<char> *, RegisterFile<unsigned short> *);
 
@@ -25,21 +26,57 @@ int main() {
 
   // Load instructions into the memory at location 0.
   char buf[1000];
-  int memPos = 0;
-  while (cin.getline(buf, 1000)) {
+  unsigned int memPos = 0;
 
+  char totalbuf[10000];
+  stringstream program(totalbuf);
+
+  while( cin.getline(buf, 1000) ){
     if (string(buf).compare(";") == 0)
       break;
-    if (buf[0] == '$') {
+
+    string bstr = string(buf);
+    if( bstr.find(':') != string::npos ){
+
+      stringstream ss(bstr);
+      char c[100];
+      ss.getline(c,100, ':');
+      string x = string(c);
+      encoder->symbols[x] = memPos;
+
+
+      ss.getline(c,100,'\n');
+      program << c << "\n";
+      memPos += 2;
+    }else if (buf[0] == '$') {
       // Initialisation command.
       processCommand(string(buf), pMem, pRegFile);
-      continue;
+
+    }else if( bstr[0] == '#' ) {
+      // A comment.
+    }else if( bstr[0] == ' ' ) {
+      // Not a valid instruction.
+    }else{
+      // Valid instruction.
+      program << bstr;
+      memPos += 2;
     }
+  }
+
+  std::cout<<"Total program size: " << memPos <<  std::endl;
+  // Reset to start.
+  memPos = 0;
+  while (program.getline(buf, 1000)) {
+
+
+
+
+    encoder->symbols["_PC_"] = memPos;
 
     vector<unsigned short> bin_instr = encoder->encode(buf);
     pMem->writeMem(memPos, bin_instr.data(), 2);
     // Ww're only putting in instructions that take up exactly 16 bits.
-    memPos += 1;
+    memPos += 2;
 
   }
 
