@@ -26,6 +26,8 @@ class Memory {
 
   void writeMem(const int idx, const void *loc, const int num_bytes);
   void readMem(const int idx, void *buffer, const int num_bytes) const;
+  unsigned short readShort(const int idx);
+  void writeShort(const int idx, unsigned short value);
 
   std::string dumpMem() const;
 
@@ -91,4 +93,14 @@ std::string Memory<T>::dumpMem() const {
   return ss.str();
 }
 
+template<typename T>
+unsigned short Memory<T>::readShort(const int idx) {
+  return static_cast<unsigned short>(this->buffer_[idx]) << 8 | static_cast<unsigned short>(this->buffer_[idx + 1]);
+}
+
+template<typename T>
+void Memory<T>::writeShort(const int idx, unsigned short value) {
+  this->buffer_[idx] = static_cast<char>(value >> 8);
+  this->buffer_[idx + 1] = static_cast<char>(value & 0xFF);
+}
 #endif //CSD_ASSIGNMENT2_MEMORY_H

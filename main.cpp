@@ -76,7 +76,8 @@ int main() {
   while (program.getline(buf, 1000)) {
     encoder->symbols["_PC_"] = memPos;
     vector<unsigned short> bin_instr = encoder->encode(buf, encoder->symbols);
-    pMem->writeMem(memPos, bin_instr.data(), 2);
+    pMem->writeShort(memPos, bin_instr[0]);
+    //pMem->writeMem(memPos, bin_instr.data(), 2);
     // Ww're only putting in instructions that take up exactly 16 bits.
     memPos += 2;
   }
@@ -103,7 +104,8 @@ void processCommand(string buf, Memory<char> *pMem, RegisterFile<unsigned short>
     extractLR(command, &l, &r);
 
     // Write 2 bytes into the memory.
-    pMem->writeMem(l, &r, 2);
+    pMem->writeShort(l, r);
+    //pMem->writeMem(l, &r, 2);
   }
 }
 

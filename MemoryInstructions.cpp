@@ -27,8 +27,9 @@ void LoadInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *me
   unsigned short phy_addr = rf->get(this->base_register) + register_offset;
 
   unsigned short transfer_half_word;
+  transfer_half_word = mem->readShort(phy_addr);
 
-  mem->readMem(phy_addr, &transfer_half_word, sizeof(unsigned short));
+  // mem->readMem(phy_addr, &transfer_half_word, sizeof(unsigned short));
 
   rf->reg(this->output_register) = transfer_half_word;
 
@@ -100,8 +101,9 @@ void StoreInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *m
   unsigned short phy_addr = this->register_offset + rf->get(this->base_register);
 
   unsigned short data = rf->get(this->input_register);
+  mem->writeShort(phy_addr, data);
 
-  mem->writeMem(phy_addr, &data, sizeof(unsigned short));
+  // mem->writeMem(phy_addr, &data, sizeof(unsigned short));
 
   rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
 
