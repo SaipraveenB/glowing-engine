@@ -9,3 +9,4 @@ ADD R7 R5 R5
 SD R0[R2] R7 
 SD R0[R3] R6 
 HLT
+;

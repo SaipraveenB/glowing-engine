@@ -32,6 +32,8 @@ void LoadInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *me
 
   rf->reg(this->output_register) = transfer_half_word;
 
+  rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
+
   return;
 }
 
@@ -39,9 +41,9 @@ void LoadInstruction::LoadFactory::registerName(map<string, Instruction::Factory
                                                 vector<Instruction::Factory *> *vec) {
   directory->insert(make_pair("LD", this));
 
-  this->INSTR_LD_BASE_OFFSET = static_cast<unsigned short>(vec->size());
-  vec->push_back(this);
+  this->INSTR_LD_BASE_OFFSET = 12;
 
+  (*vec)[this->INSTR_LD_BASE_OFFSET] = this;
   return;
 }
 
@@ -83,10 +85,10 @@ vector<unsigned short> LoadInstruction::LoadFactory::encode(vector<string> token
   instr |= INSTR_LD_BASE_OFFSET;
   instr <<= 12;
 
-  unsigned short dest_reg = static_cast<unsigned short>(std::stoi(tokens[1]));
+  unsigned short dest_reg = static_cast<unsigned short>(std::stoi(tokens[1].substr(1)));
   const auto &strs = split(tokens[2], '[');
-  unsigned short offset = static_cast<unsigned short>(std::stoi(strs[0]));
-  unsigned short base_reg = static_cast<unsigned short>(std::stoi(strs[1]));
+  unsigned short offset = static_cast<unsigned short>(std::stoi(strs[0].substr(1)));
+  unsigned short base_reg = static_cast<unsigned short>(std::stoi(split(strs[1].substr(1), ']').at(0)));
   instr |= (dest_reg & 0x0F) << 8;
   instr |= (offset & 0x0F) << 4;
   instr |= (base_reg & 0x0F);
@@ -101,6 +103,8 @@ void StoreInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *m
 
   mem->writeMem(phy_addr, &data, sizeof(unsigned short));
 
+  rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
+
   return;
 }
 
@@ -108,9 +112,9 @@ void StoreInstruction::StoreFactory::registerName(map<string, Instruction::Facto
                                                   vector<Instruction::Factory *> *vec) {
   directory->insert(make_pair("SD", this));
 
-  this->INSTR_SD_BASE_OFFSET = static_cast<unsigned short>(vec->size());
+  this->INSTR_SD_BASE_OFFSET = 13;
 
-  vec->push_back(this);
+  (*vec)[this->INSTR_SD_BASE_OFFSET] = this;
 
   return;
 }
@@ -146,9 +150,9 @@ vector<unsigned short> StoreInstruction::StoreFactory::encode(vector<string> tok
   instr <<= 12;
 
   const auto &strs = split(tokens[1], '[');
-  unsigned short offset = static_cast<unsigned short>(std::stoi(strs[0]));
-  unsigned short base_reg = static_cast<unsigned short>(std::stoi(strs[1]));
-  unsigned short input_reg = static_cast<unsigned short>(std::stoi(tokens[2]));
+  unsigned short offset = static_cast<unsigned short>(std::stoi(strs[0].substr(1)));
+  unsigned short base_reg = static_cast<unsigned short>(std::stoi(strs[1].substr(1)));
+  unsigned short input_reg = static_cast<unsigned short>(std::stoi(tokens[2].substr(1)));
   instr |= (offset & 0x0F) << 8;
   instr |= (base_reg & 0x0F) << 4;
   instr |= (input_reg & 0x0F);
