@@ -24,7 +24,7 @@ std::vector<std::string> split(const std::string &s, const char delim) {
 
 // Execute this instruction
 void LoadInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  unsigned short phy_addr = rf->get(this->base_register) + register_offset;
+  unsigned short phy_addr = rf->get(this->base_register) + rf->get(this->register_offset);
 
   unsigned short transfer_half_word;
   transfer_half_word = mem->readShort(phy_addr);
@@ -98,7 +98,7 @@ vector<unsigned short> LoadInstruction::LoadFactory::encode(vector<string> token
 }
 
 void StoreInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  unsigned short phy_addr = this->register_offset + rf->get(this->base_register);
+  unsigned short phy_addr = rf->get(this->register_offset) + rf->get(this->base_register);
 
   unsigned short data = rf->get(this->input_register);
   mem->writeShort(phy_addr, data);

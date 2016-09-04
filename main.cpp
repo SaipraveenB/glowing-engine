@@ -123,7 +123,7 @@ void extractLR(string basic_string, unsigned short *p0, unsigned short *p1) {
   ss.getline(sl, 20, '$');
   ss >> sr;
 
-  *p0 = (unsigned short) stoi(sl);
-  *p1 = (unsigned short) stoi(sr);
+  *p0 = static_cast<unsigned short> ( stoi(string(sl)));
+  *p1 = static_cast<unsigned short> ( stoi(string(sr)));
 
 }
