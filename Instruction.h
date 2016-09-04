@@ -15,6 +15,7 @@ using namespace std;
 class Instruction {
 
  public:
+  // Runs the instruction given access to the register file and memory.
   virtual void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
     // Not implemented yet.
     return;
@@ -28,13 +29,13 @@ class Instruction {
       // Not implemented yet.
       return nullptr;
     }
-
+    // Stub for the encoding functions to convert the tokens to binary.
     virtual vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols) {
       vector<unsigned short> s;
       s.push_back(0);
       return s;
     }
-
+    // Registers the names and reserves instruction numbers here.
     virtual void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec) {
       // Not implemented yet.
       // directory["ADD"] = this;
@@ -45,7 +46,7 @@ class Instruction {
 
   };
 
-  // Default.
+  // Defines if an instruction is a HALT instruction. Tells the processor to stop.
   virtual bool isHalt() {
     // Not implemented yet.
     return false;
