@@ -18,15 +18,28 @@
 template<typename T>
 class RegisterFile {
  public:
+
+  // Standard Registers
   std::vector<T> registers;
+  // Special Registers (PC, CRx etc)
   std::vector<T> spls;
+
+  // Init register file
   RegisterFile(int numRegs);
+
+  // Returns data in register 's'
   T get(int s);
+
+  // Sets data in register 's' to 'val'
   void set(int s, T val);
 
+  // Index of PC in special registers.
   static const int REG_PC = 0;
 
+  // Returns a mutable reference to the i'th register.
   T &reg(int i);
+
+  // Returns a mutable reference to the i'th special register.
   T &spl(int i);
 };
 
