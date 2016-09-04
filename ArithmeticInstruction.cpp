@@ -6,27 +6,27 @@
 
 void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
 
-  unsigned short val0;
-  unsigned short val1;
+  short val0;
+  short val1;
 
   unsigned short dest = out;
   if (mode == 0) {
-    val0 = rf->reg(in0);
-    val1 = rf->reg(in1);
+    val0 = static_cast<short>( rf->reg(in0) );
+    val1 = static_cast<short>( rf->reg(in1) );
   } else if (mode == 1) {
-    val0 = (in0 >> 3 ? in0|0xFFF0 : in0);
-    val1 = rf->reg(in1);
+    val0 = static_cast<short>(in0 >> 3 ? in0|0xFFF0 : in0);
+    val1 = static_cast<short>( rf->reg(in1) );
   } else if (mode == 2) {
-    val1 = (in1 >> 3 ? in1|0xFFF0 : in1);
-    val0 = rf->reg(in0);
+    val1 = static_cast<short>(in1 >> 3 ? in1|0xFFF0 : in1);
+    val0 = static_cast<short>( rf->reg(in0) );
   }
 
   switch (op) {
-    case 0:rf->reg(dest) = val1 + val0;
+    case 0:rf->reg(dest) = static_cast<unsigned short>( val1 + val0 );
       break;
-    case 1:rf->reg(dest) = val1 - val0;
+    case 1:rf->reg(dest) = static_cast<unsigned short>( val0 - val1 );
       break;
-    case 2:rf->reg(dest) = val1 * val0;
+    case 2:rf->reg(dest) = static_cast<unsigned short>( val1 * val0 );
       break;
   }
 

@@ -143,13 +143,13 @@ vector<unsigned short> UnconditionalBranchInstruction::UnconditionalBranchFactor
 }
 
 Instruction *UnconditionalBranchInstruction::UnconditionalBranchFactory::make(vector<unsigned short> raw_instr) {
-  ConditionalBranchInstruction *instr = new ConditionalBranchInstruction();
+  UnconditionalBranchInstruction *instr = new UnconditionalBranchInstruction();
   unsigned short inum = raw_instr[0] >> 12;
 
   if (inum != this->INSTR_UC_BRANCH)
     throw std::runtime_error("inum != this->INSTR_UC_BRANCH");
 
-  short pc_offset = static_cast<short>(raw_instr[0] & 0xFF);
+  short pc_offset = static_cast<short> ( static_cast<char>(raw_instr[0] & 0xFF) );
 
   instr->pc_offset = pc_offset;
 
