@@ -14,10 +14,10 @@ void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf, Memory<cha
     val0 = rf->reg(in0);
     val1 = rf->reg(in1);
   } else if (mode == 1) {
-    val0 = in0; // TODO(SaipraveenB): Convert from 2s complement 4-bit to 2s complement 16-bit.
+    val0 = (in0 >> 3 ? in0|0xFFF0 : in0);
     val1 = rf->reg(in1);
   } else if (mode == 2) {
-    val1 = in1;
+    val1 = (in1 >> 3 ? in1|0xFFF0 : in1);
     val0 = rf->reg(in0);
   }
 
@@ -84,26 +84,45 @@ ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens, std::map
   si0 = (unsigned short) std::stoi(in0.substr(1));
   si1 = (unsigned short) std::stoi(in1.substr(1));
 
-  if (in0[0] == '#') {
-    instr_offset = 1;
-    // TODO(SaipraveenB): 2s complement si0 here.
-  } else if (in1[0] == '#') {
-    instr_offset = 2;
-    // TODO(SaipraveenB): 2s complement si1 here.
-  }
+
 
   so = (unsigned short) std::stoi(out.substr(1));
+  si0 &= 0xF;
+  si1 &= 0xF;
+  so &= 0xF;
 
   unsigned short instr_base = 0;
+  unsigned short instr_full = 0;
   if (instr_name.compare("ADD") == 0) {
-    instr_base = INSTR_ADD;
+    instr_full = INSTR_ADD;
+    if (in0[0] == '#') {
+      instr_full = INSTR_ADD_IMM0;
+
+    } else if (in1[0] == '#') {
+      instr_full = INSTR_ADD_IMM1;
+
+    }
   } else if (instr_name.compare("SUB") == 0) {
-    instr_base = INSTR_SUB;
+    instr_full = INSTR_SUB;
+    if (in0[0] == '#') {
+      instr_full = INSTR_SUB_IMM0;
+
+    } else if (in1[0] == '#') {
+      instr_full = INSTR_SUB_IMM1;
+
+    }
   } else if (instr_name.compare("MUL") == 0) {
-    instr_base = INSTR_MUL;
+    instr_full = INSTR_MUL;
+    if (in0[0] == '#') {
+      instr_full = INSTR_MUL_IMM0;
+
+    } else if (in1[0] == '#') {
+      instr_full = INSTR_MUL_IMM1;
+
+    }
   }
 
-  unsigned short instr_full = instr_base + instr_offset;
+  //unsigned short instr_full = instr_base + instr_offset;
 
   unsigned short full = (instr_full << 12) | (so << 8) | (si0 << 4) | (si1);
   vector<unsigned short> v;

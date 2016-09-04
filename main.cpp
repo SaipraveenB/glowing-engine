@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <regex>
+#include <fstream>
 #include "Processor.h"
 #include "ArithmeticInstruction.h"
 #include "ControlInstructions.h"
@@ -10,7 +11,7 @@ void processCommand(string buf, Memory<char> *, RegisterFile<unsigned short> *);
 
 void extractLR(string basic_string, unsigned short *pInt, unsigned short *pInt1);
 
-int main() {
+int main( int argc, char** argv ) {
 
   // 8-bit stride , 1KB memory
   Memory<char> *pMem = new Memory<char>(1024);
@@ -36,11 +37,13 @@ int main() {
   char totalbuf[10000];
   stringstream program(totalbuf);
 
-  while (cin.getline(buf, 1000)) {
-    if (string(buf).compare(";") == 0)
-      break;
+  ifstream fin(argv[1]);
+  while (fin.getline(buf, 1000)) {
+    //if (string(buf).compare(";") == 0)
+    //  break;
 
     string bstr = string(buf);
+    bstr = std::regex_replace(bstr, std::regex("^ +| +$|( ) +"), "$1");
     if (bstr.find(':') != string::npos) {
 
       stringstream ss(bstr);
@@ -62,15 +65,16 @@ int main() {
       // A comment.
     } else if (bstr[0] == ' ') {
       // Not a valid instruction.
+
     } else {
       // Valid instruction.
-      bstr = std::regex_replace(bstr, std::regex("^ +| +$|( ) +"), "$1");
+
       program << bstr << "\n";
       memPos += 2;
     }
   }
 
-  std::cout << "Total program size: " << memPos << std::endl;
+  //std::cout << "Total program size: " << memPos << std::endl;
   // Reset to start.
   memPos = 0;
   while (program.getline(buf, 1000)) {
@@ -86,6 +90,7 @@ int main() {
   p->run();
 
   std::cout << pMem->dumpMem();
+
   return 0;
 }
 

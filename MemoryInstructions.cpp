@@ -11,7 +11,7 @@ void split(const std::string &s, const char delim, std::vector<std::string> &ele
   std::string item;
   while (getline(ss, item, delim)) {
     elems.push_back(item);
-    std::cerr << "item :: " << item << "\n";
+    //std::cerr << "item :: " << item << "\n";
   }
 }
 

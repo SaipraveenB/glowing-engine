@@ -10,5 +10,4 @@ ADD R2 R2 R1
 SUB R3 R3 #1 
 JMP L1  
 L2:SD R0[R4] R2 
-HLT 
-;
+HLT

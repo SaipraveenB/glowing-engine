@@ -95,12 +95,14 @@ std::string Memory<T>::dumpMem() const {
 
 template<typename T>
 unsigned short Memory<T>::readShort(const int idx) {
-  return static_cast<unsigned short>(this->buffer_[idx]) << 8 | static_cast<unsigned short>(this->buffer_[idx + 1]);
+  return static_cast<unsigned short>(this->buffer_[idx]) << 8 | static_cast<unsigned char>(this->buffer_[idx + 1]);
 }
 
 template<typename T>
 void Memory<T>::writeShort(const int idx, unsigned short value) {
   this->buffer_[idx] = static_cast<char>(value >> 8);
+  unsigned short val = value >> 8;
   this->buffer_[idx + 1] = static_cast<char>(value & 0xFF);
+  std::cout << std::bitset<16>(value >> 8).to_string();
 }
 #endif //CSD_ASSIGNMENT2_MEMORY_H
