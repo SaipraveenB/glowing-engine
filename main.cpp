@@ -6,6 +6,7 @@
 #include "ArithmeticInstruction.h"
 #include "ControlInstructions.h"
 #include "MemoryInstructions.h"
+#include "PipelinedProcessor.h"
 
 void processCommand(string buf, Memory<char> *, RegisterFile<unsigned short> *);
 
@@ -26,7 +27,7 @@ int main( int argc, char** argv ) {
   isa->addFactory(new UnconditionalBranchInstruction::UnconditionalBranchFactory());
   isa->addFactory(new HaltInstruction::HaltFactory());
 
-  Processor *p = new Processor(pMem, pRegFile, isa->getDecoder());
+  PipelinedProcessor *p = new PipelinedProcessor(pMem, pRegFile, isa->getDecoder());
 
   InstructionSet::Encoder *encoder = isa->getEncoder();
 
@@ -89,7 +90,13 @@ int main( int argc, char** argv ) {
   // Run the processor.
   p->run();
 
-  std::cout << pMem->dumpMem();
+  ofstream fout(argv[2]);
+  fout << pMem->dumpMem();
+  fout.close();
+  std::cout << "Stalls: " << p->iStalls << std::endl;
+  std::cout << "Flushes: " << p->iFlushes << std::endl;
+  std::cout << "Total Instructions: " << p->iInstrLoaded << std::endl;
+  std::cout << "Total efficiency: " << 1 - ((p->iStalls + p->iFlushes * 2) / (float) p->iInstrLoaded) << std::endl;
 
   return 0;
 }

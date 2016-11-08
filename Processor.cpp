@@ -21,8 +21,6 @@ void Processor::run() {
     if (instr->isHalt())
       return;
 
-    instr->execute(pRegFile, pMem);
-
   }
 
 }

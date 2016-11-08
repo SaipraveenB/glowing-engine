@@ -19,7 +19,10 @@ class LoadInstruction : public Instruction {
   // Register that will contain the output of LD instruction.
   unsigned short output_register;
 
-  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void execute(RegisterFile<unsigned short> *rf);
+  void fetch(RegisterFile<unsigned short> *rf);
+  void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void write(RegisterFile<unsigned short> *rf);
 
   // Register Load Instruction with Instruction Factory.
   class LoadFactory : public Factory {
@@ -32,6 +35,11 @@ class LoadInstruction : public Instruction {
 
     unsigned short INSTR_LD_BASE_OFFSET;
   };
+  void *marker_pao;
+  void *marker_pab;
+  unsigned short phy_addr;
+  unsigned short transfer_half_word;
+
 };
 
 // Store Instruction (SD)
@@ -47,7 +55,10 @@ class StoreInstruction : public Instruction {
   // Register containing the source of data.
   unsigned short input_register;
 
-  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void execute(RegisterFile<unsigned short> *rf);
+  void fetch(RegisterFile<unsigned short> *rf);
+  void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void write(RegisterFile<unsigned short> *rf);
 
   // Register Store Instruction with Instruction Factory.
   class StoreFactory : public Factory {
@@ -60,6 +71,12 @@ class StoreInstruction : public Instruction {
 
     unsigned short INSTR_SD_BASE_OFFSET;
   };
+  unsigned short phy_addr;
+  unsigned short data;
+
+  void *marker_pao;
+  void *marker_pab;
+  void *marker_data;
 };
 
 #endif //CSD_ASSIGNMENT2_MEMORYINSTRUCTIONS_H

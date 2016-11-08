@@ -20,7 +20,10 @@ class ArithmeticInstruction : public Instruction {
   unsigned short op;
 
   // Based on mode and op, this function either adds subtracts or multiplies the operands.
-  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void execute(RegisterFile<unsigned short> *rf);
+  void fetch(RegisterFile<unsigned short> *rf);
+  void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void write(RegisterFile<unsigned short> *rf);
 
   class ArithmeticFactory : public Factory {
 
@@ -49,6 +52,11 @@ class ArithmeticInstruction : public Instruction {
 
   };
 
+  short val0;
+  short val1;
+  unsigned short res;
+  void *marker0;
+  void *marker1;
 };
 
 #endif //CSD_ASSIGNMENT2_ARITHMETICINSTRUCTION_H

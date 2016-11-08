@@ -52,15 +52,21 @@ vector<unsigned short> HaltInstruction::HaltFactory::encode(vector<string> token
 
   return std::vector<unsigned short>(1, instr);
 }
-
-void ConditionalBranchInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  if (rf->reg(this->check_reg) == 0)
-    rf->spl(RegisterFile<unsigned short>::REG_PC) += this->pc_offset;
-  else
-    rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
-
-  return;
+void HaltInstruction::execute(RegisterFile<unsigned short> *rf) {
+  advance();
 }
+void HaltInstruction::fetch(RegisterFile<unsigned short> *rf) {
+  advance();
+}
+void HaltInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  advance();
+}
+void HaltInstruction::write(RegisterFile<unsigned short> *rf) {
+  //rf->spl(RegisterFile<unsigned short>::REG_PC) = ~static_cast<unsigned short>(0);
+  advance();
+}
+
+
 
 void ConditionalBranchInstruction::ConditionalBranchFactory::registerName(map<string,
                                                                               Instruction::Factory *> *directory,
@@ -107,12 +113,9 @@ Instruction *ConditionalBranchInstruction::ConditionalBranchFactory::make(vector
 
   instr->check_reg = check_reg;
   instr->pc_offset = pc_offset;
+  instr->marker_target = nullptr;
 
   return instr;
-}
-void UnconditionalBranchInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  rf->spl(RegisterFile<unsigned short>::REG_PC) += this->pc_offset;
-  return;
 }
 
 void UnconditionalBranchInstruction::UnconditionalBranchFactory::registerName(map<string,
@@ -154,4 +157,59 @@ Instruction *UnconditionalBranchInstruction::UnconditionalBranchFactory::make(ve
   instr->pc_offset = pc_offset;
 
   return instr;
+}
+
+/*void ConditionalBranchInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  if (target == 0)
+    rf->spl(RegisterFile<unsigned short>::REG_PC) += this->pc_offset;
+  else
+    rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
+
+  return;
+}*/
+
+void ConditionalBranchInstruction::execute(RegisterFile<unsigned short> *rf) {
+  if (target == 0) {
+
+    rf->spl(RegisterFile<unsigned short>::REG_PC) += this->pc_offset - 6;
+    // Force pipeline flush.
+    rf->spl(RegisterFile<unsigned short>::REG_BSR) = 1;
+
+  }
+  advance();
+}
+
+void ConditionalBranchInstruction::fetch(RegisterFile<unsigned short> *rf) {
+  //target = rf->reg(this->check_reg);
+  if ((marker_target = rf->try_get(this->check_reg, target, marker_target)) != nullptr) {
+    // Stall.
+    return;
+  }
+
+  advance();
+}
+void ConditionalBranchInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  advance();
+}
+void ConditionalBranchInstruction::write(RegisterFile<unsigned short> *rf) {
+  advance();
+}
+void UnconditionalBranchInstruction::execute(RegisterFile<unsigned short> *rf) {
+
+  // Recover 2 instructions already in the pipeline.
+  rf->spl(RegisterFile<unsigned short>::REG_PC) += this->pc_offset - 6;
+
+  // Force pipeline flush.
+  rf->spl(RegisterFile<unsigned short>::REG_BSR) = 1;
+
+  advance();
+}
+void UnconditionalBranchInstruction::fetch(RegisterFile<unsigned short> *rf) {
+  advance();
+}
+void UnconditionalBranchInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  advance();
+}
+void UnconditionalBranchInstruction::write(RegisterFile<unsigned short> *rf) {
+  advance();
 }

@@ -22,21 +22,6 @@ std::vector<std::string> split(const std::string &s, const char delim) {
 }
 }
 
-// Execute this instruction
-void LoadInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  unsigned short phy_addr = rf->get(this->base_register) + rf->get(this->register_offset);
-
-  unsigned short transfer_half_word;
-  transfer_half_word = mem->readShort(phy_addr);
-
-  // mem->readMem(phy_addr, &transfer_half_word, sizeof(unsigned short));
-
-  rf->reg(this->output_register) = transfer_half_word;
-
-  rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
-
-  return;
-}
 
 void LoadInstruction::LoadFactory::registerName(map<string, Instruction::Factory *> *directory,
                                                 vector<Instruction::Factory *> *vec) {
@@ -72,6 +57,8 @@ Instruction *LoadInstruction::LoadFactory::make(vector<unsigned short> raw_instr
   li->output_register = dest_reg;
   li->register_offset = offset;
 
+  li->marker_pab = nullptr;
+  li->marker_pao = nullptr;
   return li;
 }
 
@@ -95,19 +82,6 @@ vector<unsigned short> LoadInstruction::LoadFactory::encode(vector<string> token
   instr |= (base_reg & 0x0F);
 
   return std::vector<unsigned short>(1, instr);
-}
-
-void StoreInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  unsigned short phy_addr = rf->get(this->register_offset) + rf->get(this->base_register);
-
-  unsigned short data = rf->get(this->input_register);
-  mem->writeShort(phy_addr, data);
-
-  // mem->writeMem(phy_addr, &data, sizeof(unsigned short));
-
-  rf->spl(RegisterFile<unsigned short>::REG_PC) += 2;
-
-  return;
 }
 
 void StoreInstruction::StoreFactory::registerName(map<string, Instruction::Factory *> *directory,
@@ -136,6 +110,9 @@ Instruction *StoreInstruction::StoreFactory::make(vector<unsigned short> raw_ins
   instr->input_register = input_reg;
   instr->base_register = base_reg;
   instr->register_offset = offset;
+  instr->marker_data = nullptr;
+  instr->marker_pao = nullptr;
+  instr->marker_pab = nullptr;
 
   return instr;
 }
@@ -160,4 +137,69 @@ vector<unsigned short> StoreInstruction::StoreFactory::encode(vector<string> tok
   instr |= (input_reg & 0x0F);
 
   return std::vector<unsigned short>(1, instr);
+}
+void StoreInstruction::execute(RegisterFile<unsigned short> *rf) {
+  advance();
+}
+void StoreInstruction::fetch(RegisterFile<unsigned short> *rf) {
+  unsigned short phy_addr_offset;// = rf->get(this->register_offset);
+  unsigned short phy_addr_base;// = rf->get(this->base_register);
+  if ((marker_pao = rf->try_get(this->register_offset, phy_addr_offset, marker_pao)) != nullptr) {
+    // Stall.
+    return;
+  }
+
+  if ((marker_pab = rf->try_get(this->base_register, phy_addr_base, marker_pab)) != nullptr) {
+    // Stall.
+    return;
+  }
+
+  phy_addr = phy_addr_base + phy_addr_offset;
+  data = rf->get(this->input_register);
+
+  if ((marker_data = rf->try_get(this->input_register, data, marker_data)) != nullptr) {
+    // Stall.
+    return;
+  }
+
+  advance();
+
+}
+void StoreInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  mem->writeShort(phy_addr, data);
+  advance();
+}
+void StoreInstruction::write(RegisterFile<unsigned short> *rf) {
+  advance();
+}
+
+void LoadInstruction::execute(RegisterFile<unsigned short> *rf) {
+  advance();
+}
+void LoadInstruction::fetch(RegisterFile<unsigned short> *rf) {
+  unsigned short phy_addr_offset;// = rf->get(this->register_offset);
+  unsigned short phy_addr_base;// = rf->get(this->base_register);
+  if ((marker_pao = rf->try_get(this->register_offset, phy_addr_offset, marker_pao)) != nullptr) {
+    // Stall.
+    return;
+  }
+
+  if ((marker_pab = rf->try_get(this->base_register, phy_addr_base, marker_pab)) != nullptr) {
+    // Stall.
+    return;
+  }
+
+  phy_addr = phy_addr_base + phy_addr_offset;
+  rf->mark_volatile(this->output_register, this);
+
+  advance();
+}
+void LoadInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  this->transfer_half_word = mem->readShort(phy_addr);
+  rf->forward_operand(this->output_register, this, this->transfer_half_word);
+  advance();
+}
+void LoadInstruction::write(RegisterFile<unsigned short> *rf) {
+  rf->set(this->output_register, transfer_half_word);
+  advance();
 }

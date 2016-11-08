@@ -14,11 +14,42 @@ using namespace std;
 
 class Instruction {
 
+
  public:
+  // Possible pipe states in order.
+  enum PipeState {
+    DECODE, FETCH, EXECUTE, MEMORY, WRITE, DONE
+  };
+  PipeState state;
+  // Advance this instruction to the next state.
+  void advance() {
+    int next = static_cast<int>( state ) + 1;
+    state = static_cast<PipeState>( next );
+  }
+  Instruction() {
+    // Initialize to FETHC
+    state = PipeState::FETCH;
+  }
+
   // Runs the instruction given access to the register file and memory.
-  virtual void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  virtual void execute(RegisterFile<unsigned short> *rf) {
     // Not implemented yet.
     return;
+  }
+
+  // Get register values and identify which values are volatile( for operand forwarding )
+  virtual void fetch(RegisterFile<unsigned short> *rf) {
+    // Not implemented yet.
+  }
+
+  // Write/Read values from memory here.
+  virtual void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+    // Not implemented yet.
+  }
+
+  // Write back to register file.
+  virtual void write(RegisterFile<unsigned short> *rf) {
+    // Not implemented yet.
   }
 
   class Factory {
@@ -51,7 +82,6 @@ class Instruction {
     // Not implemented yet.
     return false;
   }
-
 };
 
 #endif //CSD_ASSIGNMENT2_INSTRUCTION_H

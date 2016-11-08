@@ -15,6 +15,11 @@ class HaltInstruction : public Instruction {
     return true;
   }
 
+  void execute(RegisterFile<unsigned short> *rf);
+  void fetch(RegisterFile<unsigned short> *rf);
+  void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void write(RegisterFile<unsigned short> *rf);
+
   // Factory to register the encoders and decoders for HLT instruction.
   class HaltFactory : public Factory {
    public:
@@ -44,7 +49,10 @@ class ConditionalBranchInstruction : public Instruction {
   short pc_offset;
 
   // Executes a conditional branch instruction.
-  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void execute(RegisterFile<unsigned short> *rf);
+  void fetch(RegisterFile<unsigned short> *rf);
+  void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void write(RegisterFile<unsigned short> *rf);
 
   // Registering conditional branch instruction BEQZ with instruction factory.
   class ConditionalBranchFactory : public Factory {
@@ -59,6 +67,8 @@ class ConditionalBranchInstruction : public Instruction {
 
     unsigned short INSTR_C_BRANCH;
   };
+  unsigned short target;
+  void *marker_target;
 };
 
 // Unconditional Branch Instruction (JMP)
@@ -68,7 +78,10 @@ class UnconditionalBranchInstruction : public Instruction {
   // Offset from PC that the PC will be set to.
   short pc_offset;
 
-  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void execute(RegisterFile<unsigned short> *rf);
+  void fetch(RegisterFile<unsigned short> *rf);
+  void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
+  void write(RegisterFile<unsigned short> *rf);
 
   // Registering the Unconditional Branch Instruction with Instruction Factory.
   class UnconditionalBranchFactory : public Factory {
