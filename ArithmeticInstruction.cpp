@@ -2,10 +2,8 @@
 // Created by Saipraveen B on 26/08/16.
 //
 
+
 #include "ArithmeticInstruction.h"
-
-
-
 void ArithmeticInstruction::ArithmeticFactory::registerName(map<string, Instruction::Factory *> *directory,
                                                             vector<Instruction::Factory *> *vec) {
 
@@ -103,7 +101,7 @@ ArithmeticInstruction::ArithmeticFactory::encode(vector<string> tokens, std::map
 
 }
 
-Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned short> raw_instr) {
+Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned short> raw_instr, unsigned short pc) {
 
   ArithmeticInstruction *ai = new ArithmeticInstruction();
 
@@ -111,6 +109,7 @@ Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned shor
 
   if (inum == INSTR_ADD || inum == INSTR_ADD_IMM1 || inum == INSTR_ADD_IMM0) {
     ai->op = 0;
+    ai->pipe = 0;
     if (inum == INSTR_ADD)
       ai->mode = 0;
     else if (inum == INSTR_ADD_IMM0)
@@ -121,6 +120,7 @@ Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned shor
 
   if (inum == INSTR_SUB || inum == INSTR_SUB_IMM1 || inum == INSTR_SUB_IMM0) {
     ai->op = 1;
+    ai->pipe = 0;
     if (inum == INSTR_SUB)
       ai->mode = 0;
     else if (inum == INSTR_SUB_IMM0)
@@ -131,6 +131,7 @@ Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned shor
 
   if (inum == INSTR_MUL || inum == INSTR_MUL_IMM1 || inum == INSTR_MUL_IMM0) {
     ai->op = 2;
+    ai->pipe = 1;
     if (inum == INSTR_MUL)
       ai->mode = 0;
     else if (inum == INSTR_MUL_IMM0)
@@ -148,11 +149,13 @@ Instruction *ArithmeticInstruction::ArithmeticFactory::make(vector<unsigned shor
   // Initialize the operand forwarding markers
   ai->marker0 = nullptr;
   ai->marker1 = nullptr;
-
+  ai->marked = false;
+  ai->pc = pc;
   return ai;
+
 }
 
-void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf) {
+void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
   switch (op) {
     case 0:res = static_cast<unsigned short>( val1 + val0 );
       break;
@@ -162,7 +165,7 @@ void ArithmeticInstruction::execute(RegisterFile<unsigned short> *rf) {
       break;
   }
 
-  // Forward operand.
+  // Forward operand. Later commit it.
   rf->forward_operand(this->out, this, res);
 
   advance();
@@ -172,38 +175,81 @@ void ArithmeticInstruction::fetch(RegisterFile<unsigned short> *rf) {
   unsigned short regval0;
   unsigned short regval1;
 
+  // Mark the targets volatile even before we get the data so that instructions in the decode queue work properly.
+
+  bool stall = false;
   if (mode == 0) {
-    if ((marker0 = rf->try_get(in0, regval0, marker0)) != nullptr) {
+    if (!this->done0 && (marker0 = rf->try_get(in0, regval0, marker0)) != nullptr) {
       // Stall.
-      return;
+      // return;
+      stall = true;
+    } else {
+      if (!this->done0)
+        val0 = static_cast<short>( regval0 );
+      this->done0 = true;
     }
 
-    if ((marker1 = rf->try_get(in1, regval1, marker1)) != nullptr) {
+    if (!this->done1 && (marker1 = rf->try_get(in1, regval1, marker1)) != nullptr) {
       // Stall.
-      return;
+      // return;
+      stall = true;
+    } else {
+      if (!this->done1)
+        val1 = static_cast<short>( regval1 );
+      this->done1 = true;
     }
 
-    val0 = static_cast<short>( regval0 );
-    val1 = static_cast<short>( regval1 );
+    if (!marked) {
+      rf->mark_volatile(out, this);
+      marked = true;
+    }
+
+    if (stall) return;
+
   } else if (mode == 1) {
     val0 = static_cast<short>(in0 >> 3 ? in0 | 0xFFF0 : in0);
-    if ((marker1 = rf->try_get(in1, regval1, marker1)) != nullptr) {
+    if (!this->done1 && (marker1 = rf->try_get(in1, regval1, marker1)) != nullptr) {
       // Stall.
-      return;
+      // return;
+      stall = true;
+    } else {
+      if (!this->done1)
+        val1 = static_cast<short>( regval1 );
+      this->done1 = true;
+
     }
 
-    val1 = static_cast<short>( regval1 );
+    if (!marked) {
+      rf->mark_volatile(out, this);
+      marked = true;
+    }
+    if (stall) return;
+
   } else if (mode == 2) {
 
     val1 = static_cast<short>(in1 >> 3 ? in1 | 0xFFF0 : in1);
-    if ((marker0 = rf->try_get(in0, regval0, marker0)) != nullptr) {
+    if (!done0 && (marker0 = rf->try_get(in0, regval0, marker0)) != nullptr) {
       // Stall.
-      return;
+      //return;
+      stall = true;
+    } else {
+      if (!this->done0)
+        val0 = static_cast<short>( regval0 );
+
+      this->done0 = true;
+
     }
-    val0 = static_cast<short>( regval0 );
+
+    if (!marked) {
+      rf->mark_volatile(out, this);
+      marked = true;
+    }
+    if (stall) return;
+
+
   }
 
-  rf->mark_volatile(out, this);
+
   advance();
 }
 void ArithmeticInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
@@ -211,6 +257,14 @@ void ArithmeticInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char
 }
 
 void ArithmeticInstruction::write(RegisterFile<unsigned short> *rf) {
-  rf->set(this->out, res);
+  //rf->set(this->out, res);
+  rf->commit_operands(this);
   advance();
+}
+string ArithmeticInstruction::toStringSL() {
+  string sup = Instruction::toStringSL();
+  stringstream ss;
+  ss << sup << " ArithmeticInstr" << " val0-wait: " << pcOf(marker0) << " val1-wait: " << pcOf(marker1) << " val0: "
+     << val0 << " val1: " << val1;
+  return ss.str();
 }

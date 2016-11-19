@@ -10,7 +10,7 @@
 #include "InstructionSet.h"
 
 // Processor Class to simulate a processor.
-class PipelinedProcessor {
+class SuperScalarProcessor {
  private:
 
   // Byte-addressable memory of the processor.
@@ -22,7 +22,7 @@ class PipelinedProcessor {
  public:
 
   // Initialization of processor
-  PipelinedProcessor(Memory<char> *mem, RegisterFile<unsigned short> *rf, InstructionSet::Decoder *decoder);
+  SuperScalarProcessor(Memory<char> *mem, RegisterFile<unsigned short> *rf, InstructionSet::Decoder *decoder);
 
   // Run the processors i.e. execute instructions.
   void run();
@@ -33,6 +33,7 @@ class PipelinedProcessor {
   // Number of stalls, flushes and loaded instructuons.
   int iStalls, iFlushes, iInstrLoaded;
 
+  void printALUs();
 };
 
 #endif //CSD_ASSIGNMENT2_PROCESSOR_H

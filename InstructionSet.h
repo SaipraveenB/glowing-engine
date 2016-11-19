@@ -32,9 +32,9 @@ class InstructionSet {
     // Construct a decoder for a given instruction set.
     Decoder(InstructionSet *is);
     // Decodes a given instruction by calling the appropriate constructor.
-    Instruction *decode(vector<unsigned short> instr_raw);
-
+    Instruction *decode(vector<unsigned short> instr_raw, unsigned short pc);
     InstructionSet *set;
+
   };
 
   class Encoder {

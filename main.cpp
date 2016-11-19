@@ -6,7 +6,7 @@
 #include "ArithmeticInstruction.h"
 #include "ControlInstructions.h"
 #include "MemoryInstructions.h"
-#include "PipelinedProcessor.h"
+#include "SuperScalarProcessor.h"
 
 void processCommand(string buf, Memory<char> *, RegisterFile<unsigned short> *);
 
@@ -27,7 +27,7 @@ int main( int argc, char** argv ) {
   isa->addFactory(new UnconditionalBranchInstruction::UnconditionalBranchFactory());
   isa->addFactory(new HaltInstruction::HaltFactory());
 
-  PipelinedProcessor *p = new PipelinedProcessor(pMem, pRegFile, isa->getDecoder());
+  SuperScalarProcessor *p = new SuperScalarProcessor(pMem, pRegFile, isa->getDecoder());
 
   InstructionSet::Encoder *encoder = isa->getEncoder();
 

@@ -13,18 +13,20 @@ class InstructionWrapper {
   InstructionSet::Decoder *decoder;
   //Instruction::Factory* factory;
   vector<unsigned short> raw;
+  // Record PC at decode stage.
+  unsigned short pc;
 
-  InstructionWrapper(vector<unsigned short> raw, InstructionSet::Decoder *decoder)
-      : raw(raw), decoder(decoder), instr(nullptr) {};
+  InstructionWrapper(vector<unsigned short> raw, InstructionSet::Decoder *decoder, unsigned short pc)
+      : raw(raw), decoder(decoder), instr(nullptr), pc(pc) {};
 
   Instruction::PipeState getState() {
     return instr ? (instr->state) : Instruction::PipeState::DECODE;
   }
   void decode() {
-    instr = decoder->decode(raw);
+    instr = decoder->decode(raw, pc);
   }
-  void execute(RegisterFile<unsigned short> *rf) {
-    instr->execute(rf);
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+    instr->execute(rf, mem);
   }
   void fetch(RegisterFile<unsigned short> *rf) {
     instr->fetch(rf);
@@ -35,9 +37,24 @@ class InstructionWrapper {
   void write(RegisterFile<unsigned short> *rf) {
     instr->write(rf);
   }
-
   bool isHalt() {
     return instr->isHalt();
   }
+  void advance() {
+    instr->advance();
+  }
+  int getPipeIndex() {
+    return instr->pipe;
+  }
+  string toString() {
+    if (!instr) {
+      stringstream ss;
+      ss << "PC: " << pc << " Raw";
+      return ss.str();
+    }
+
+    return instr->toStringSL();
+  }
+
 };
 #endif //CSD_ASSIGNMENT2_INSTRUCTIONWRAPPER_H_H

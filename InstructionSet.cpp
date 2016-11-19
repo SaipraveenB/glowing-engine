@@ -3,7 +3,6 @@
 //
 
 #include <sstream>
-#include <algorithm>
 #include "InstructionSet.h"
 
 int InstructionSet::addFactory(Instruction::Factory *factory) {
@@ -31,9 +30,9 @@ InstructionSet::Decoder::Decoder(InstructionSet *is) {
   this->set = is;
 }
 
-Instruction *InstructionSet::Decoder::decode(vector<unsigned short> instr_raw) {
+Instruction *InstructionSet::Decoder::decode(vector<unsigned short> instr_raw, unsigned short pc) {
   unsigned short inum = (instr_raw[0] >> 12);
-  return this->set->constructors.at(inum)->make(instr_raw);
+  return this->set->constructors.at(inum)->make(instr_raw, pc);
 }
 
 InstructionSet::Encoder::Encoder(InstructionSet *is) {

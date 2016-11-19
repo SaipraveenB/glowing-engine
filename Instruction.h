@@ -12,27 +12,43 @@
 
 using namespace std;
 
+#define pcOf(x) (x ? (reinterpret_cast<Instruction*>(x)->pc) : -1 )
+
 class Instruction {
 
 
  public:
   // Possible pipe states in order.
   enum PipeState {
-    DECODE, FETCH, EXECUTE, MEMORY, WRITE, DONE
+    DECODE, FETCH, EXECUTE, WRITE, DONE
   };
+
+  const string PS_STRINGS[5] = {"DECODING", "FETCHING", "EXECUTING", "WRITING", "DONE"};
+  // Pipeline number.
+  int pipe;
+  unsigned short pc;
+
+  virtual string toStringSL() {
+    stringstream ss;
+    ss << "PC: " << pc << " state: " << PS_STRINGS[static_cast<int>(state)] << " pipe: " << pipe;
+    return ss.str();
+  }
+
   PipeState state;
   // Advance this instruction to the next state.
   void advance() {
     int next = static_cast<int>( state ) + 1;
     state = static_cast<PipeState>( next );
   }
+
   Instruction() {
-    // Initialize to FETHC
+    // Initialize to FETCH
     state = PipeState::FETCH;
+    pc = 0;
   }
 
   // Runs the instruction given access to the register file and memory.
-  virtual void execute(RegisterFile<unsigned short> *rf) {
+  virtual void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
     // Not implemented yet.
     return;
   }
@@ -56,7 +72,7 @@ class Instruction {
 
    public:
 
-    virtual Instruction *make(vector<unsigned short> raw_instr) {
+    virtual Instruction *make(vector<unsigned short> raw_instr, unsigned short pc) {
       // Not implemented yet.
       return nullptr;
     }

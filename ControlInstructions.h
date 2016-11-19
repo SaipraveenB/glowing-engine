@@ -15,7 +15,8 @@ class HaltInstruction : public Instruction {
     return true;
   }
 
-  void execute(RegisterFile<unsigned short> *rf);
+  string toStringSL();
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void fetch(RegisterFile<unsigned short> *rf);
   void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void write(RegisterFile<unsigned short> *rf);
@@ -28,7 +29,7 @@ class HaltInstruction : public Instruction {
     void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec);
 
     // Converts raw bytes into an Instruction* for execution.
-    Instruction *make(vector<unsigned short> raw_instr);
+    Instruction *make(vector<unsigned short> raw_instr, unsigned short pc);
 
     // Converts a raw string description into raw bytes (machine code)
     vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
@@ -36,6 +37,7 @@ class HaltInstruction : public Instruction {
     // OPCODE for HLT instruction.
     unsigned short INSTR_HALT;
   };
+
 };
 
 // Conditional Branch Instruction (BEQZ)
@@ -47,9 +49,9 @@ class ConditionalBranchInstruction : public Instruction {
 
   // Offset from PC that will be used (register)
   short pc_offset;
-
+  string toStringSL();
   // Executes a conditional branch instruction.
-  void execute(RegisterFile<unsigned short> *rf);
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void fetch(RegisterFile<unsigned short> *rf);
   void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void write(RegisterFile<unsigned short> *rf);
@@ -63,7 +65,7 @@ class ConditionalBranchInstruction : public Instruction {
 
     vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
-    Instruction *make(vector<unsigned short> raw_instr);
+    Instruction *make(vector<unsigned short> raw_instr, unsigned short pc);
 
     unsigned short INSTR_C_BRANCH;
   };
@@ -77,8 +79,8 @@ class UnconditionalBranchInstruction : public Instruction {
 
   // Offset from PC that the PC will be set to.
   short pc_offset;
-
-  void execute(RegisterFile<unsigned short> *rf);
+  string toStringSL();
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void fetch(RegisterFile<unsigned short> *rf);
   void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void write(RegisterFile<unsigned short> *rf);
@@ -92,7 +94,7 @@ class UnconditionalBranchInstruction : public Instruction {
 
     vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
-    Instruction *make(vector<unsigned short> raw_instr);
+    Instruction *make(vector<unsigned short> raw_instr, unsigned short pc);
 
     unsigned short INSTR_UC_BRANCH;
   };

@@ -35,7 +35,7 @@ void LoadInstruction::LoadFactory::registerName(map<string, Instruction::Factory
 
 // Generates an Instruction from a raw instruction
 // 16-bit instruction :: INSTR_ID|DEST_REG|OFFSET|BASE_REG
-Instruction *LoadInstruction::LoadFactory::make(vector<unsigned short> raw_instr) {
+Instruction *LoadInstruction::LoadFactory::make(vector<unsigned short> raw_instr, unsigned short pc) {
   LoadInstruction *li = new LoadInstruction();
 
   // Instruction ID is bits 15-12
@@ -59,6 +59,11 @@ Instruction *LoadInstruction::LoadFactory::make(vector<unsigned short> raw_instr
 
   li->marker_pab = nullptr;
   li->marker_pao = nullptr;
+  li->marked = false;
+  // Set Pipe to the Memory Pipe.
+  li->pipe = 2;
+  li->pc = pc;
+
   return li;
 }
 
@@ -96,7 +101,7 @@ void StoreInstruction::StoreFactory::registerName(map<string, Instruction::Facto
 }
 
 // 16-bit Instruction format :: INSTR_ID|OFFSET|BASE_REG|INPUT_REG
-Instruction *StoreInstruction::StoreFactory::make(vector<unsigned short> raw_instr) {
+Instruction *StoreInstruction::StoreFactory::make(vector<unsigned short> raw_instr, unsigned short pc) {
   unsigned short instr_id = raw_instr[0] >> 12;
   if (instr_id != this->INSTR_SD_BASE_OFFSET)
     throw std::runtime_error("instr_id != INSTR_SD_BASE_OFFSET");
@@ -113,7 +118,10 @@ Instruction *StoreInstruction::StoreFactory::make(vector<unsigned short> raw_ins
   instr->marker_data = nullptr;
   instr->marker_pao = nullptr;
   instr->marker_pab = nullptr;
-
+  instr->marked = false;
+  // Set Pipe to the Memory Pipe.
+  instr->pipe = 2;
+  instr->pc = pc;
   return instr;
 }
 
@@ -138,68 +146,110 @@ vector<unsigned short> StoreInstruction::StoreFactory::encode(vector<string> tok
 
   return std::vector<unsigned short>(1, instr);
 }
-void StoreInstruction::execute(RegisterFile<unsigned short> *rf) {
+void StoreInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+  mem->writeShort(phy_addr, data);
   advance();
 }
 void StoreInstruction::fetch(RegisterFile<unsigned short> *rf) {
-  unsigned short phy_addr_offset;// = rf->get(this->register_offset);
-  unsigned short phy_addr_base;// = rf->get(this->base_register);
-  if ((marker_pao = rf->try_get(this->register_offset, phy_addr_offset, marker_pao)) != nullptr) {
-    // Stall.
-    return;
-  }
+  //unsigned short phy_addr_offset;// = rf->get(this->register_offset);
+  //unsigned short phy_addr_base;// = rf->get(this->base_register);
 
-  if ((marker_pab = rf->try_get(this->base_register, phy_addr_base, marker_pab)) != nullptr) {
+  bool stall = false;
+  if (!this->pao_done && (marker_pao = rf->try_get(this->register_offset, phy_addr_offset, marker_pao)) != nullptr) {
     // Stall.
-    return;
-  }
+    //return;
+    stall = true;
+  } else
+    this->pao_done = true;
+
+  if (!this->pab_done && (marker_pab = rf->try_get(this->base_register, phy_addr_base, marker_pab)) != nullptr) {
+    // Stall.
+    //return;
+    stall = true;
+  } else
+    this->pab_done = true;
+
 
   phy_addr = phy_addr_base + phy_addr_offset;
   data = rf->get(this->input_register);
 
-  if ((marker_data = rf->try_get(this->input_register, data, marker_data)) != nullptr) {
+  if (!this->data_done && (marker_data = rf->try_get(this->input_register, data, marker_data)) != nullptr) {
     // Stall.
-    return;
-  }
+    //return;
+    stall = true;
+  } else
+    this->data_done = true;
 
+  if (stall) return;
   advance();
 
 }
 void StoreInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
-  mem->writeShort(phy_addr, data);
+
   advance();
 }
 void StoreInstruction::write(RegisterFile<unsigned short> *rf) {
   advance();
 }
-
-void LoadInstruction::execute(RegisterFile<unsigned short> *rf) {
-  advance();
+string StoreInstruction::toStringSL() {
+  string sup = Instruction::toStringSL();
+  stringstream ss;
+  ss << sup << " StoreInstr" << " data-wait: " << pcOf(marker_data) << " pao-pab-wait: " << pcOf(marker_pao) << ","
+     << pcOf(marker_pab) << " data: " << data << " pao,pab: " << register_offset << base_register;
+  return ss.str();
 }
-void LoadInstruction::fetch(RegisterFile<unsigned short> *rf) {
-  unsigned short phy_addr_offset;// = rf->get(this->register_offset);
-  unsigned short phy_addr_base;// = rf->get(this->base_register);
-  if ((marker_pao = rf->try_get(this->register_offset, phy_addr_offset, marker_pao)) != nullptr) {
-    // Stall.
-    return;
-  }
 
-  if ((marker_pab = rf->try_get(this->base_register, phy_addr_base, marker_pab)) != nullptr) {
-    // Stall.
-    return;
-  }
-
-  phy_addr = phy_addr_base + phy_addr_offset;
-  rf->mark_volatile(this->output_register, this);
-
-  advance();
-}
-void LoadInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+void LoadInstruction::execute(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
   this->transfer_half_word = mem->readShort(phy_addr);
   rf->forward_operand(this->output_register, this, this->transfer_half_word);
   advance();
 }
-void LoadInstruction::write(RegisterFile<unsigned short> *rf) {
-  rf->set(this->output_register, transfer_half_word);
+
+void LoadInstruction::fetch(RegisterFile<unsigned short> *rf) {
+
+  if (!marked) {
+    rf->mark_volatile(this->output_register, this);
+    marked = true;
+  }
+  bool stall = false;
+  if (!this->pao_done && (marker_pao = rf->try_get(this->register_offset, phy_addr_offset, marker_pao)) != nullptr) {
+    // Stall.
+    // return;
+    stall = true;
+  } else
+    this->pao_done = true;
+
+  if (!this->pab_done && (marker_pab = rf->try_get(this->base_register, phy_addr_base, marker_pab)) != nullptr) {
+    // Stall.
+    // return;
+    stall = true;
+  } else
+    this->pab_done = true;
+
+  if (!marked) {
+    rf->mark_volatile(this->output_register, this);
+    marked = true;
+  }
+
+  if (stall) return;
+  phy_addr = phy_addr_base + phy_addr_offset;
+  //rf->mark_volatile(this->output_register, this);
+
   advance();
+}
+void LoadInstruction::memory(RegisterFile<unsigned short> *rf, Memory<char> *mem) {
+
+  advance();
+}
+void LoadInstruction::write(RegisterFile<unsigned short> *rf) {
+
+  rf->commit_operands(this);
+  advance();
+}
+string LoadInstruction::toStringSL() {
+  string sup = Instruction::toStringSL();
+  stringstream ss;
+  ss << sup << " LoadInstr" << " pao-pab-wait: " << pcOf(marker_pao) << "," << pcOf(marker_pab) << " pao,pab: "
+     << register_offset << base_register;
+  return ss.str();
 }

@@ -18,9 +18,9 @@ class ArithmeticInstruction : public Instruction {
   unsigned short out;
   // Operation ID.
   unsigned short op;
-
+  string toStringSL();
   // Based on mode and op, this function either adds subtracts or multiplies the operands.
-  void execute(RegisterFile<unsigned short> *rf);
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void fetch(RegisterFile<unsigned short> *rf);
   void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void write(RegisterFile<unsigned short> *rf);
@@ -36,7 +36,7 @@ class ArithmeticInstruction : public Instruction {
     vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
     // Decodes the given array of shorts. Creates an Arithmetic Instruction object and sets it's mode, in0, in1, out and op to their respective values.
-    Instruction *make(vector<unsigned short> raw_instr);
+    Instruction *make(vector<unsigned short> raw_instr, unsigned short pc);
 
     unsigned short INSTR_ADD;
     unsigned short INSTR_ADD_IMM0;
@@ -50,6 +50,7 @@ class ArithmeticInstruction : public Instruction {
     unsigned short INSTR_SUB_IMM0;
     unsigned short INSTR_SUB_IMM1;
 
+
   };
 
   short val0;
@@ -57,6 +58,9 @@ class ArithmeticInstruction : public Instruction {
   unsigned short res;
   void *marker0;
   void *marker1;
+  bool marked;
+  bool done0 = false;
+  bool done1 = false;
 };
 
 #endif //CSD_ASSIGNMENT2_ARITHMETICINSTRUCTION_H

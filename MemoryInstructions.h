@@ -19,7 +19,8 @@ class LoadInstruction : public Instruction {
   // Register that will contain the output of LD instruction.
   unsigned short output_register;
 
-  void execute(RegisterFile<unsigned short> *rf);
+  string toStringSL();
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void fetch(RegisterFile<unsigned short> *rf);
   void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void write(RegisterFile<unsigned short> *rf);
@@ -29,7 +30,7 @@ class LoadInstruction : public Instruction {
    public:
     void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec);
 
-    Instruction *make(vector<unsigned short> raw_instr);
+    Instruction *make(vector<unsigned short> raw_instr, unsigned short pc);
 
     vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
@@ -39,7 +40,11 @@ class LoadInstruction : public Instruction {
   void *marker_pab;
   unsigned short phy_addr;
   unsigned short transfer_half_word;
-
+  bool marked;
+  bool pao_done = false;
+  bool pab_done = false;
+  unsigned short phy_addr_offset;
+  unsigned short phy_addr_base;
 };
 
 // Store Instruction (SD)
@@ -55,7 +60,8 @@ class StoreInstruction : public Instruction {
   // Register containing the source of data.
   unsigned short input_register;
 
-  void execute(RegisterFile<unsigned short> *rf);
+  string toStringSL();
+  void execute(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void fetch(RegisterFile<unsigned short> *rf);
   void memory(RegisterFile<unsigned short> *rf, Memory<char> *mem);
   void write(RegisterFile<unsigned short> *rf);
@@ -65,7 +71,7 @@ class StoreInstruction : public Instruction {
    public:
     void registerName(map<string, Instruction::Factory *> *directory, vector<Instruction::Factory *> *vec);
 
-    Instruction *make(vector<unsigned short> raw_instr);
+    Instruction *make(vector<unsigned short> raw_instr, unsigned short pc);
 
     vector<unsigned short> encode(vector<string> tokens, std::map<std::string, unsigned int> symbols);
 
@@ -77,6 +83,13 @@ class StoreInstruction : public Instruction {
   void *marker_pao;
   void *marker_pab;
   void *marker_data;
+  bool marked;
+
+  bool pab_done = false;
+  bool data_done = false;
+  bool pao_done = false;
+  unsigned short phy_addr_offset;
+  unsigned short phy_addr_base;
 };
 
 #endif //CSD_ASSIGNMENT2_MEMORYINSTRUCTIONS_H
